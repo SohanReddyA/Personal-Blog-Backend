@@ -7,6 +7,8 @@ const BlogSchema = mongoose.Schema({
     imgUrl : String,
     created : String,
     lastUpdated : String,
+    likes: Number,
+    comments: Array
 
 });
 

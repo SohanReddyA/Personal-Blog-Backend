@@ -6,21 +6,21 @@ const mongoose = require('mongoose');
 router.get('/', (req, res, next) => {
   blog
     .find()
-    .select('_id title body created lastUpdated imgUrl')
+    .select('_id title body created lastUpdated imgUrl comment likes')
     .exec()
     .then((docs) => {
       const resp = {
-        count: docs.length,
+        count: docs.length - 1,
         blogs: docs.map((doc) => {
-          console.log(doc.body.split(' ').splice(0, 10).join(' '));
-          return {
-            _id: doc._id,
-            title: doc.title,
-            body: doc.body.split(' ').splice(0, 10).join(' '),
-            imgUrl: doc.imgUrl,
-            created: doc.created,
-            lastUpdated: doc.lastUpdated,
-          };
+          if (doc._id !== 'Login')
+            return {
+              _id: doc._id,
+              title: doc.title,
+              body: doc.body.split(' ').splice(0, 10).join(' '),
+              imgUrl: doc.imgUrl,
+              created: doc.created,
+              lastUpdated: doc.lastUpdated,
+            };
         }),
       };
       if (docs.length > 0) res.status(200).json(resp);
@@ -39,6 +39,8 @@ router.post('/', (req, res, next) => {
     created: new Date().toLocaleString(),
     body: req.body.body,
     imgUrl: req.body.imgUrl,
+    comments: [],
+    likes: 0,
   });
   Blog.save()
     .then((result) => {
@@ -61,9 +63,58 @@ router.post('/', (req, res, next) => {
       });
     });
 });
-
+router.put('/:id', (req, res, next) => {
+  const id = req.params.id;
+  const updateOps = {};
+  for (const ops of req.body) {
+    updateOps[ops.propName] = ops.value;
+  }
+  blog
+    .findById(id)
+    .exec()
+    .then((doc) => {
+      let likes = doc.likes;
+      let comment = doc.comments;
+      let comments = [];
+      if (updateOps['likes']) {
+        if (updateOps['likes'] == 1) likes += 1;
+        else if (updateOps['likes'] == -1) likes -= 1;
+      }
+      if (updateOps['comments']) {
+        if (updateOps['comments'].id) {
+          for (let i = 0; i < comment.length; i++) {
+            if (i != updateOps['comments'].id - 1) {
+              comments.push(comment[i]);
+            }
+          }
+        } else {
+          comments = comment;
+          comments.unshift(updateOps['comments'].value);
+        }
+      }
+      else{
+        comments=comment;
+      }
+      blog
+        .update({ _id: id }, { likes, comments })
+        .exec()
+        .then((result) => {
+          console.log(result);
+          res.status(200).json({ message: 'entry updated' });
+        })
+        .catch((err) => {
+          console.log(err);
+          res.status(500).json({ error: err });
+        });
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).json({ error: err });
+    });
+});
 router.get('/:id', (req, res, next) => {
   const id = req.params.id;
+
   blog
     .findById(id)
     .exec()
@@ -77,6 +128,8 @@ router.get('/:id', (req, res, next) => {
           imgUrl: doc.imgUrl,
           created: doc.created,
           lastUpdated: doc.lastUpdated,
+          likes: doc.likes,
+          comments: doc.comments,
         });
       } else {
         res.status(404).json({ message: 'No valid entry present for this id' });
@@ -110,6 +163,7 @@ router.patch('/:id', (req, res, next) => {
     res.status(500).json({ message: 'Enter the body in the specified format' });
   }
 });
+
 router.delete('/:id', (req, res, next) => {
   const id = req.params.id;
   blog
