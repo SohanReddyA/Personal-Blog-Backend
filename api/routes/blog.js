@@ -11,10 +11,10 @@ router.get('/page/:page', (req, res, next) => {
     .exec()
     .then((docs) => {
       docs.shift();
-      docs=docs.reverse();
+      docs = docs.reverse();
       const resp = {
         count: docs.length,
-        blogs: docs.slice((page-1)*10,page*11).map((doc) => {
+        blogs: docs.slice((page - 1) * 10, page * 11).map((doc) => {
           return {
             _id: doc._id,
             title: doc.title,
@@ -115,31 +115,42 @@ router.put('/:id', (req, res, next) => {
 });
 router.get('/:id', (req, res, next) => {
   const id = req.params.id;
-
-  blog
-    .findById(id)
-    .exec()
-    .then((doc) => {
-      if (doc) {
+  if (id == 'Login') {
+    blog
+      .findById(id)
+      .exec()
+      .then((doc) => {
         console.log(doc);
-        res.status(200).json({
-          _id: doc._id,
-          title: doc.title,
-          body: doc.body,
-          imgUrl: doc.imgUrl,
-          created: doc.created,
-          lastUpdated: doc.lastUpdated,
-          likes: doc.likes,
-          comments: doc.comments,
-        });
-      } else {
-        res.status(404).json({ message: 'No valid entry present for this id' });
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-      res.status(500).json({ error: err });
-    });
+        res.status(200).json({ doc });
+      });
+  } else {
+    blog
+      .findById(id)
+      .exec()
+      .then((doc) => {
+        if (doc) {
+          console.log(doc);
+          res.status(200).json({
+            _id: doc._id,
+            title: doc.title,
+            body: doc.body,
+            imgUrl: doc.imgUrl,
+            created: doc.created,
+            lastUpdated: doc.lastUpdated,
+            likes: doc.likes,
+            comments: doc.comments,
+          });
+        } else {
+          res
+            .status(404)
+            .json({ message: 'No valid entry present for this id' });
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+        res.status(500).json({ error: err });
+      });
+  }
 });
 router.patch('/:id', (req, res, next) => {
   const id = req.params.id;
