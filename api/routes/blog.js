@@ -3,24 +3,26 @@ const router = express.Router();
 const blog = require('../models/blog');
 const mongoose = require('mongoose');
 
-router.get('/', (req, res, next) => {
+router.get('/page/:page', (req, res, next) => {
+  const page = req.params.page;
   blog
     .find()
     .select('_id title body created lastUpdated imgUrl comment likes')
     .exec()
     .then((docs) => {
+      docs.shift();
+      docs=docs.reverse();
       const resp = {
-        count: docs.length - 1,
-        blogs: docs.map((doc) => {
-          if (doc._id !== 'Login')
-            return {
-              _id: doc._id,
-              title: doc.title,
-              body: doc.body.split(' ').splice(0, 10).join(' '),
-              imgUrl: doc.imgUrl,
-              created: doc.created,
-              lastUpdated: doc.lastUpdated,
-            };
+        count: docs.length,
+        blogs: docs.slice((page-1)*10,page*11).map((doc) => {
+          return {
+            _id: doc._id,
+            title: doc.title,
+            body: doc.body.split(' ').splice(0, 10).join(' '),
+            imgUrl: doc.imgUrl,
+            created: doc.created,
+            lastUpdated: doc.lastUpdated,
+          };
         }),
       };
       if (docs.length > 0) res.status(200).json(resp);
@@ -91,9 +93,8 @@ router.put('/:id', (req, res, next) => {
           comments = comment;
           comments.unshift(updateOps['comments'].value);
         }
-      }
-      else{
-        comments=comment;
+      } else {
+        comments = comment;
       }
       blog
         .update({ _id: id }, { likes, comments })
