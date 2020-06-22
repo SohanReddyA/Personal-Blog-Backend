@@ -14,7 +14,7 @@ router.get('/page/:page', (req, res, next) => {
       docs = docs.reverse();
       const resp = {
         count: docs.length,
-        blogs: docs.slice((page - 1) * 10, page * 11).map((doc) => {
+        blogs: docs.slice((page - 1) * 10, page * 10).map((doc) => {
           return {
             _id: doc._id,
             title: doc.title,
