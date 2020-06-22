@@ -18,7 +18,7 @@ router.get('/page/:page', (req, res, next) => {
           return {
             _id: doc._id,
             title: doc.title,
-            body: doc.body.split(' ').splice(0, 10).join(' '),
+            body: doc.body.split(' ').splice(0, 150).join(' '),
             imgUrl: doc.imgUrl,
             created: doc.created,
             lastUpdated: doc.lastUpdated,
