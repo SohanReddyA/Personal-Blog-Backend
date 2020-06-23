@@ -43,6 +43,7 @@ router.post('/', (req, res, next) => {
     imgUrl: req.body.imgUrl,
     comments: [],
     likes: 0,
+    lastUpdated: '',
   });
   Blog.save()
     .then((result) => {
