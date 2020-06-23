@@ -97,7 +97,7 @@ router.put('/:id', (req, res, next) => {
         comments = comment;
       }
       blog
-        .update({ _id: id }, { likes, comments })
+        .update({ _id: id }, { likes, comments },{lastUpdated: new Date().toLocaleString();})
         .exec()
         .then((result) => {
           console.log(result);
