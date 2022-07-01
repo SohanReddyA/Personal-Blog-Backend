@@ -7,7 +7,7 @@ const ToDoRoutes = require('./api/routes/blog');
 
 mongoose.connect(
   'mongodb+srv://User:Password@blog-91xy1.mongodb.net/Blogs?retryWrites=true&w=majority',
-  { useNewUrlParser: true }
+  { useNewUrlParser: true, useUnifiedTopology: true }
 );
 mongoose.Promise = global.Promise;
 //MiddleWare
